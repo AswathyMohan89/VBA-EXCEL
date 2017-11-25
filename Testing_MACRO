@@ -1,0 +1,141 @@
+'Create a script that will loop through all the stocks and take the following info.
+'Yearly change from what the stock opened the year at to what the closing price was.
+'The percent change from the what it opened the year at to what it closed.
+'The total Volume of the stock
+'Ticker Symbol
+'Conditional formatting that will highlight positive change in green and negative change in red.
+'To locate the stock with the "Greatest % increase", "Greatest % Decrease" and "Greatest total volume"
+''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+Sub TotalStockVolume()
+    Dim i As Long
+    Dim j As Integer
+    Dim k As Integer
+    Dim col As Integer
+    Dim LastRow As Long
+    Dim sheet As Worksheet
+    Dim totalStock As Double
+    Dim percentChange As Double
+    Dim yearlyChange As Double
+    Dim openStock As Double
+    Dim closeStock As Double
+    Dim maxPercent As Double
+    Dim maxTicker As String
+    Dim minPercent As Double
+    Dim minTicker As String
+    Dim maxTotal As Double
+    Dim maxTotalString As String
+    'iterate through each worksheet in the workbook
+    For Each sheet In ActiveWorkbook.Worksheets
+            'set j as the row for entering output values
+            j = 2
+            maxPercent = 0         'set maxPercent=0 as initial value for maximum value of percentage change for each new sheet
+            minPercent = 0         'set minPercent=0 as initial value for minimum value of percentage change for each new sheet
+            maxTotal = 0    'set maxTotal=0 as initial value for maximum value of Total Stock Volume for each new sheet
+            'calculates lastrow in each sheet
+            LastRow = sheet.Cells(Rows.Count, 1).End(xlUp).Row
+            'formatting cells
+            sheet.Cells.VerticalAlignment = xlTop
+            sheet.Cells.HorizontalAlignment = xlCenter
+            'formatting cells to autofit
+            sheet.Cells.EntireColumn.AutoFit
+            'creating borders
+            sheet.Cells.Borders.LineStyle = xlContinuous
+            sheet.Cells.Borders.Weight = xlThin
+'            sheet.Cells.BorderAround = xlThin
+            'set header values
+            sheet.Cells(j - 1, 9).Value = "Ticker"
+            sheet.Cells(j - 1, 10).Value = "Yearly Change"
+            sheet.Cells(j - 1, 11).Value = "Percent Change"
+            sheet.Cells(j - 1, 12).Value = "Total Stock Volume"
+            sheet.Cells(j - 1, 15).Value = "Ticker"
+            sheet.Cells(j - 1, 16).Value = "Value"
+            sheet.Cells(j, 14).Value = "Greatest % Increase"
+            sheet.Cells(j + 1, 14).Value = "Greatest % Decrease"
+            sheet.Cells(j + 2, 14).Value = "Greatest Total Volume"
+            'formatting header row
+            sheet.Cells(j - 1, 1).EntireRow.Font.Bold = True
+            'formatting header row borders
+            For col = j - 1 To 16
+                With sheet.Cells(j - 1, col).Borders
+                        .LineStyle = xlContinuous
+                        .Weight = xlThick
+                End With
+            Next col
+            'set open stock value for the first entry in the sheet
+            openStock = sheet.Cells(2, 3).Value
+            'iterate from secondrow to lastrow
+                For i = 2 To LastRow
+                    'check until different value in ticker value occurs
+                    If sheet.Cells(i, 1).Value <> sheet.Cells(i + 1, 1).Value Then
+                        'set output under ticker value column and respective total stock for that ticcker
+                        sheet.Cells(j, 9).Value = sheet.Cells(i, 1).Value
+                        totalStock = totalStock + sheet.Cells(i, 7).Value
+                        'set close stock of the ticker value
+                        closeStock = sheet.Cells(i, 6).Value
+                        'calculate yearly change as difference between closing stock and opening stock
+                        yearlyChange = closeStock - openStock
+                        'check if openstock is 0, if so change in stock percentage is yearly change, otherwise divide yearlychange by openstock
+                        If openStock = 0 Then
+                            percentChange = yearlyChange
+                        Else
+                            percentChange = (yearlyChange / openStock)
+                        End If
+                        'set column with respective yearly change
+                        sheet.Cells(j, 10).Value = yearlyChange
+                        'set green color for positive values and red for negative values
+                        If yearlyChange >= 0 Then
+                            sheet.Cells(j, 10).Interior.ColorIndex = 4
+                        ElseIf yearlyChange < 0 Then
+                            sheet.Cells(j, 10).Interior.ColorIndex = 3
+                        End If
+                        'set column with respective percent and format as %
+                        sheet.Cells(j, 11).Value = percentChange
+                        sheet.Cells(j, 11).NumberFormat = "0.00%"
+                        'set column with respective totalStock
+                        sheet.Cells(j, 12).Value = totalStock
+                        'calculate greatest % increase
+                        If percentChange > maxPercent Then
+                            maxPercent = percentChange
+                            'get name of ticker with max percentage
+                            maxTicker = sheet.Cells(j, 9).Value
+                        End If
+                        'calculate greatest % decrease
+                        If percentChange < minPercent Then
+                            minPercent = percentChange
+                            'get name of ticker with min percentage
+                            minTicker = sheet.Cells(j, 9).Value
+                        End If
+                        'find  max total stock volume
+                        If totalStock > maxTotal Then
+                            maxTotal = totalStock
+                            'get name of ticker with max total stock volume
+                            maxTotalString = sheet.Cells(j, 9).Value
+                        End If
+                        'reset totalStock value for next ticker
+                        totalStock = 0
+                        'increment output column row
+                        j = j + 1
+                        'set value of openstock for next ticker
+                        openStock = sheet.Cells(i + 1, 3).Value
+                    Else
+                        'if two rows have same ticker sum up total stock volume
+                        totalStock = totalStock + sheet.Cells(i, 7).Value
+                   End If
+                Next i
+        'set values of maximum % increase,maximum % decrease and max total stock volume
+        sheet.Cells(2, 15).Value = maxTicker
+        sheet.Cells(2, 16).Value = maxPercent
+        sheet.Cells(2, 16).NumberFormat = "0.00%"
+        sheet.Cells(3, 15).Value = minTicker
+        sheet.Cells(3, 16).Value = minPercent
+        sheet.Cells(3, 16).NumberFormat = "0.00%"
+        sheet.Cells(4, 15).Value = maxTotalString
+        sheet.Cells(4, 16).Value = maxTotal
+        
+    Next sheet
+    
+End Sub
+
+
+
+
